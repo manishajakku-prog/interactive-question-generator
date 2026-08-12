@@ -1,21 +1,16 @@
 import os
 import gradio as gr
 from google import genai
-from google.colab import userdata
 
-# Get API key from Colab Secrets
-api_key = os.getenv("vip")
+api_key = os.getenv("GEMINI_API_KEY")
 
-# Initialize Gemini client
 client = genai.Client(api_key=api_key)
 
 print("Gemini API connected successfully!")
 
-
 def generate_questions(topic, difficulty, number_of_questions):
     prompt = f"""
 You are an interactive question generator.
-
 Topic: {topic}
 Difficulty: {difficulty}
 Number of questions: {number_of_questions}
@@ -55,4 +50,7 @@ demo = gr.Interface(
     title="Interactive Question Generator"
 )
 
-demo.launch(share=True)
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=int(os.environ.get("PORT", 7860))
+)
