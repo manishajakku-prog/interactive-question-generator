@@ -4,7 +4,7 @@ from google import genai
 from google.colab import userdata
 
 # Get API key from Colab Secrets
-api_key = userdata.get("vip")
+api_key = os.getenv("vip")
 
 # Initialize Gemini client
 client = genai.Client(api_key=api_key)
