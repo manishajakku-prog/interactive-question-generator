@@ -1,44 +1,31 @@
-# Paste the app.py code I provided above here
 import os
 import gradio as gr
 from google import genai
 
 
 # ==========================================
-# GET GEMINI API KEY
+# GEMINI API KEY
 # ==========================================
 
-try:
-    # Google Colab
-    from google.colab import userdata
-    api_key = userdata.get("vip")
-
-except ImportError:
-    # Render
-    api_key = os.environ.get("GEMINI_API_KEY")
-
-
-# ==========================================
-# CHECK API KEY
-# ==========================================
+api_key = os.environ.get("vip")
 
 if not api_key:
-    raise ValueError(
-        "Gemini API key not found. "
-        "In Colab, create a secret named 'vip'. "
-        "In Render, create an environment variable named 'GEMINI_API_KEY'."
+    raise RuntimeError(
+        "GEMINI_API_KEY is missing. "
+        "Go to Render > Environment and add "
+        "GEMINI_API_KEY with your Gemini API key."
     )
 
 
 # ==========================================
-# INITIALIZE GEMINI
+# GEMINI CLIENT
 # ==========================================
 
 client = genai.Client(api_key=api_key)
 
 
 # ==========================================
-# QUESTION GENERATOR FUNCTION
+# QUESTION GENERATOR
 # ==========================================
 
 def generate_questions(topic, difficulty, number_of_questions):
@@ -49,41 +36,34 @@ def generate_questions(topic, difficulty, number_of_questions):
     prompt = f"""
 You are an interactive question generator.
 
-Generate exactly {number_of_questions} questions.
+Generate exactly {int(number_of_questions)} questions.
 
 Topic: {topic}
 Difficulty Level: {difficulty}
 
-Rules:
-1. Generate exactly {number_of_questions} questions.
-2. Number each question clearly from 1 to {number_of_questions}.
-3. Do not provide answers.
-4. Do not provide explanations.
-5. Keep every question relevant to the topic.
-6. Match the selected difficulty level.
+Instructions:
+- Generate exactly {int(number_of_questions)} questions.
+- Number the questions from 1 to {int(number_of_questions)}.
+- Do not provide answers.
+- Do not provide explanations.
+- Make every question relevant to the topic.
+- Match the selected difficulty level.
 
 Difficulty guidelines:
 
 Easy:
-- Basic definitions
-- Simple concepts
-- Basic understanding
+Basic concepts, definitions, and simple understanding.
 
 Medium:
-- Application
-- Comparison
-- Moderate reasoning
+Application, comparison, and moderate reasoning.
 
 Hard:
-- Analysis
-- Problem solving
-- Advanced reasoning
+Analysis, problem solving, and advanced reasoning.
 
 Return only the numbered questions.
 """
 
     try:
-
         response = client.models.generate_content(
             model="gemini-3.5-flash",
             contents=prompt
@@ -99,7 +79,7 @@ Return only the numbered questions.
 
 
 # ==========================================
-# GRADIO INTERFACE
+# GRADIO APPLICATION
 # ==========================================
 
 demo = gr.Interface(
@@ -146,10 +126,14 @@ demo = gr.Interface(
 
 
 # ==========================================
-# LAUNCH GRADIO
+# START SERVER
 # ==========================================
 
-# Google Colab
-# share=True automatically finds an available port.
+if __name__ == "__main__":
 
-demo.launch(share=True)
+    port = int(os.environ.get("PORT", 7860))
+
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=port
+    )
